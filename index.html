@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard Operacional</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" type="image/png" href="logo.png"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo-container">
+      <img src="logo.png" alt="Logo" class="logo"/>
+    </div>
+    <div class="button-group">
+      <button onclick="location.reload()">Atualizar</button>
+      <button onclick="window.location.href='graficos.html'">Ver Gráficos</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1>Dashboard de Operações</h1>
+    <p class="date-info">
+      <span id="data-atual"></span> | <span id="data-amanha"></span>
+    </p>
+
+    <section>
+      <h2 class="section-title">Resumo de Hoje</h2>
+      <div class="dashboard" id="resumoCards"></div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Programação de Amanhã</h2>
+      <div class="dashboard" id="programacaoCards"></div>
+    </section>
+  </main>
+
+  <!-- Modal -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close" onclick="fecharModal()">&times;</span>
+      <h3 id="modalOperacao"></h3>
+
+      <!-- Abas -->
+      <div class="modal-tabs">
+        <button id="tab-info" class="active" onclick="mostrarAba('info')">Informações</button>
+        <button id="tab-div" onclick="mostrarAba('div')">Divergência</button>
+      </div>
+
+      <!-- Aba: Informações -->
+      <div id="modalInfo" class="modal-tab-content">
+        <p><strong>Cliente:</strong> <span id="modalCliente"></span></p>
+        <p><strong>Data:</strong> <span id="modalData"></span></p>
+        <p><strong>Observação:</strong> <span id="modalObs"></span></p>
+        <p><strong>Divergência:</strong> <span id="modalDivergencia"></span></p>
+      </div>
+
+      <!-- Aba: Divergência -->
+      <div id="modalDiv" class="modal-tab-content hidden">
+        <div>
+          <label for="inputDivergencia"><strong>Houve divergência?</strong></label>
+          <select id="inputDivergencia">
+            <option value="">Selecione</option>
+            <option value="sim">Sim</option>
+            <option value="não">Não</option>
+          </select>
+        </div>
+
+        <div id="campoDescricao" class="hidden">
+          <label for="inputDescricao"><strong>Descreva a divergência:</strong></label>
+          <textarea id="inputDescricao" rows="4" placeholder="Detalhe a divergência..."></textarea>
+        </div>
+
+        <button id="salvarDivergencia" onclick="enviarDivergencia()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
