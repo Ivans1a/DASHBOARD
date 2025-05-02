@@ -3,11 +3,11 @@ const programacaoUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTyRRusn
 
 function csvToJson(csv) {
   const lines = csv.trim().split('\n');
-  const headers = lines.shift().split(',');
+  const headers = lines.shift().split(',').map(h => h.trim());
   return lines.map(line => {
-    const values = line.split(',');
+    const values = line.split(',').map(v => v.trim());
     return headers.reduce((obj, header, i) => {
-      obj[header.trim()] = values[i]?.trim() || "";
+      obj[header] = values[i] || "";
       return obj;
     }, {});
   });
@@ -31,7 +31,6 @@ function getAmanha(date) {
 document.addEventListener("DOMContentLoaded", () => {
   const hoje = new Date();
   const amanha = getAmanha(hoje);
-
   const formatarData = (data) => data.toLocaleDateString("pt-BR", {
     day: "2-digit", month: "2-digit", year: "numeric"
   });
@@ -42,15 +41,25 @@ document.addEventListener("DOMContentLoaded", () => {
   carregarDashboard();
 });
 
+async function fetchComTimeout(url, timeout = 10000) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+    return await response.text();
+  } finally {
+    clearTimeout(id);
+  }
+}
+
 async function fetchComRetry(url, tentativas = 3) {
   for (let i = 0; i < tentativas; i++) {
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Erro HTTP: " + response.status);
-      return await response.text();
+      return await fetchComTimeout(url);
     } catch (erro) {
       if (i === tentativas - 1) throw erro;
-      await new Promise(resolve => setTimeout(resolve, 1000)); // espera 1s
+      await new Promise(res => setTimeout(res, 1000));
     }
   }
 }
@@ -188,5 +197,112 @@ function atualizarCampoDescricao() {
   else {
     campoDescricao.classList.add("hidden");
     document.getElementById("inputDescricao").value = "";
+  }
+}
+
+async function exportarPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const logo = document.getElementById("logo");
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = logo.naturalWidth;
+  canvas.height = logo.naturalHeight;
+  ctx.drawImage(logo, 0, 0);
+  const imgData = canvas.toDataURL("image/png");
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const imgWidth = 60;
+  const imgHeight = (logo.naturalHeight / logo.naturalWidth) * imgWidth;
+  const x = (pageWidth - imgWidth) / 2;
+  doc.addImage(imgData, "PNG", x, 10, imgWidth, imgHeight);
+  let currentY = 10 + imgHeight + 10;
+  doc.setFontSize(16);
+  doc.setTextColor(30, 30, 30);
+  doc.text("Relatório Diário de Operações", pageWidth / 2, currentY, { align: "center" });
+  currentY += 10;
+
+  const hoje = new Date();
+  const amanha = getAmanha(hoje);
+  const dataHoje = hoje.toLocaleDateString("pt-BR");
+  const dataAmanha = amanha.toLocaleDateString("pt-BR");
+
+  const resumoHeaders = ["Data", "Cliente", "Operação", "Divergência"];
+  const programacaoHeaders = ["Data", "Cliente", "Operação"];
+
+  try {
+    const [resumoCSV, programacaoCSV] = await Promise.all([
+      fetchComRetry(resumoUrl),
+      fetchComRetry(programacaoUrl),
+    ]);
+    const resumoData = csvToJson(resumoCSV);
+    const programacaoData = csvToJson(programacaoCSV);
+
+    const hojeFormatada = formatDate(hoje);
+    const amanhaFormatada = formatDate(amanha);
+
+    const resumoHoje = resumoData.filter(item => item["DATA"] === hojeFormatada);
+    const programacaoAmanha = programacaoData.filter(item => item["DATA"] === amanhaFormatada);
+
+    const resumoBody = resumoHoje.map(item => [
+      item["DATA"],
+      item["CLIENTE"],
+      item["OPERAÇÃO"],
+      item["HOUVE DIVERGENCIA?"] || "Indefinido",
+    ]);
+
+    const programacaoBody = programacaoAmanha.map(item => [
+      item["DATA"],
+      item["CLIENTE"],
+      item["OPERAÇÃO"],
+    ]);
+
+    currentY += 5;
+    doc.setFontSize(14);
+    doc.text(`Resumo - ${dataHoje}`, 14, currentY);
+    currentY += 4;
+    doc.autoTable({
+      startY: currentY,
+      head: [resumoHeaders],
+      body: resumoBody,
+      theme: "striped",
+      styles: {
+        fontSize: 10,
+        cellPadding: 3,
+        valign: 'middle'
+      },
+      headStyles: {
+        fillColor: [33, 66, 99],
+        textColor: [255, 255, 255],
+      },
+      margin: { left: 14, right: 14 }
+    });
+
+    currentY = doc.autoTable.previous.finalY + 10;
+    doc.setFontSize(14);
+    doc.text(`Programação - ${dataAmanha}`, 14, currentY);
+    currentY += 4;
+    doc.autoTable({
+      startY: currentY,
+      head: [programacaoHeaders],
+      body: programacaoBody,
+      theme: "grid",
+      styles: {
+        fontSize: 10,
+        cellPadding: 3,
+        valign: 'middle'
+      },
+      headStyles: {
+        fillColor: [255, 153, 0],
+        textColor: [0, 0, 0],
+      },
+      margin: { left: 14, right: 14 }
+    });
+
+    doc.save(`relatorio_${dataHoje.replace(/\//g, "-")}.pdf`);
+
+  } catch (erro) {
+    console.error("Erro ao gerar PDF:", erro);
+    alert("Erro ao gerar o PDF. Verifique sua conexão.");
   }
 }
