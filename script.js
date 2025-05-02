@@ -1,5 +1,10 @@
+// --- script.js ---
+
 const resumoUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTyRRusn-fwNRzkeA5RKEZFDM3MnTCi-YFzM5oXvr6ZtG23PTgIJK3ubi9zJyIRZqBmFEysexyvk8lQ/pub?gid=0&single=true&output=csv";
 const programacaoUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTyRRusn-fwNRzkeA5RKEZFDM3MnTCi-YFzM5oXvr6ZtG23PTgIJK3ubi9zJyIRZqBmFEysexyvk8lQ/pub?gid=839921770&single=true&output=csv";
+
+let resumoData = [];
+let programacaoData = [];
 
 function csvToJson(csv) {
   const lines = csv.trim().split('\n');
@@ -39,6 +44,23 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("data-amanha").textContent = `Amanhã: ${formatarData(amanha)}`;
 
   carregarDashboard();
+
+  const botao = document.getElementById("exportarPdf");
+  if (botao) {
+    botao.addEventListener("click", () => {
+      if (typeof gerarPDF === "function") {
+        const hoje = formatDate(new Date());
+const amanha = formatDate(getAmanha(new Date()));
+
+const resumoHoje = resumoData.filter(item => item["DATA"] === hoje);
+const programacaoAmanha = programacaoData.filter(item => item["DATA"] === amanha);
+
+gerarPDF(resumoHoje, programacaoAmanha);
+      } else {
+        alert("Função de exportação ainda não carregada.");
+      }
+    });
+  }
 });
 
 async function fetchComTimeout(url, timeout = 10000) {
@@ -79,8 +101,8 @@ async function carregarDashboard() {
       fetchComRetry(programacaoUrl)
     ]);
 
-    const resumoData = csvToJson(resumoCSV);
-    const programacaoData = csvToJson(programacaoCSV);
+    resumoData = csvToJson(resumoCSV);
+    programacaoData = csvToJson(programacaoCSV);
 
     const hoje = new Date();
     const amanha = getAmanha(hoje);
@@ -188,7 +210,7 @@ function mostrarAba(aba) {
   }
 }
 
-document.getElementById("inputDivergencia").addEventListener("change", atualizarCampoDescricao);
+document.getElementById("inputDivergencia")?.addEventListener("change", atualizarCampoDescricao);
 
 function atualizarCampoDescricao() {
   const valor = document.getElementById("inputDivergencia").value.toLowerCase();
@@ -199,110 +221,120 @@ function atualizarCampoDescricao() {
     document.getElementById("inputDescricao").value = "";
   }
 }
+function gerarPDF(resumoHoje, programacaoAmanha) {
+  const doc = new jspdf.jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  const hojeFormatado = formatDate(new Date());
 
-async function exportarPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
+  const img = new Image();
+  img.src = "logo.png";
 
-  const logo = document.getElementById("logo");
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-  canvas.width = logo.naturalWidth;
-  canvas.height = logo.naturalHeight;
-  ctx.drawImage(logo, 0, 0);
-  const imgData = canvas.toDataURL("image/png");
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const imgWidth = 60;
-  const imgHeight = (logo.naturalHeight / logo.naturalWidth) * imgWidth;
-  const x = (pageWidth - imgWidth) / 2;
-  doc.addImage(imgData, "PNG", x, 10, imgWidth, imgHeight);
-  let currentY = 10 + imgHeight + 10;
-  doc.setFontSize(16);
-  doc.setTextColor(30, 30, 30);
-  doc.text("Relatório Diário de Operações", pageWidth / 2, currentY, { align: "center" });
-  currentY += 10;
+  img.onload = () => {
+    // === TOPO COM LOGO E TÍTULO ===
+    doc.addImage(img, "PNG", 125, 10, 50, 15); // logo centralizada
 
-  const hoje = new Date();
-  const amanha = getAmanha(hoje);
-  const dataHoje = hoje.toLocaleDateString("pt-BR");
-  const dataAmanha = amanha.toLocaleDateString("pt-BR");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(33, 33, 33);
+    doc.text("RELATÓRIO OPERACIONAL", 148.5, 35, { align: "center" });
 
-  const resumoHeaders = ["Data", "Cliente", "Operação", "Divergência"];
-  const programacaoHeaders = ["Data", "Cliente", "Operação"];
+    doc.setDrawColor(200);
+    doc.line(14, 40, 283, 40); // linha divisória
 
-  try {
-    const [resumoCSV, programacaoCSV] = await Promise.all([
-      fetchComRetry(resumoUrl),
-      fetchComRetry(programacaoUrl),
-    ]);
-    const resumoData = csvToJson(resumoCSV);
-    const programacaoData = csvToJson(programacaoCSV);
-
-    const hojeFormatada = formatDate(hoje);
-    const amanhaFormatada = formatDate(amanha);
-
-    const resumoHoje = resumoData.filter(item => item["DATA"] === hojeFormatada);
-    const programacaoAmanha = programacaoData.filter(item => item["DATA"] === amanhaFormatada);
-
-    const resumoBody = resumoHoje.map(item => [
-      item["DATA"],
-      item["CLIENTE"],
+    // === SEÇÃO: RESUMO DE HOJE ===
+    const resumoColumns = ["OPERAÇÃO", "CLIENTE", "DATA", "DIVERGÊNCIA"];
+    const resumoRows = resumoHoje.map(item => [
       item["OPERAÇÃO"],
-      item["HOUVE DIVERGENCIA?"] || "Indefinido",
-    ]);
-
-    const programacaoBody = programacaoAmanha.map(item => [
-      item["DATA"],
       item["CLIENTE"],
-      item["OPERAÇÃO"],
+      item["DATA"],
+      item["DESCRICAO"] || "-"
     ]);
 
-    currentY += 5;
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
-    doc.text(`Resumo - ${dataHoje}`, 14, currentY);
-    currentY += 4;
+    doc.setTextColor(0); // preto
+    doc.text("Resumo de Hoje", 14, 48);
+
     doc.autoTable({
-      startY: currentY,
-      head: [resumoHeaders],
-      body: resumoBody,
+      startY: 52,
+      head: [resumoColumns],
+      body: resumoRows,
+      margin: { left: 14, right: 14 },
       theme: "striped",
-      styles: {
-        fontSize: 10,
-        cellPadding: 3,
-        valign: 'middle'
-      },
       headStyles: {
-        fillColor: [33, 66, 99],
-        textColor: [255, 255, 255],
+        fillColor: [52, 73, 94],
+        textColor: 255,
+        halign: 'center',
+        fontStyle: 'bold'
       },
-      margin: { left: 14, right: 14 }
+      bodyStyles: {
+        halign: 'center',
+        valign: 'middle',
+        fontSize: 10
+      },
+      styles: {
+        lineColor: [220],
+        lineWidth: 0.2,
+        minCellHeight: 8
+      }
     });
 
-    currentY = doc.autoTable.previous.finalY + 10;
+    // === SEÇÃO: PROGRAMAÇÃO DE AMANHÃ ===
+    const progColumns = ["OPERAÇÃO", "CLIENTE", "DATA"];
+    const progRows = programacaoAmanha.map(item => [
+      item["OPERAÇÃO"],
+      item["CLIENTE"],
+      item["DATA"]
+    ]);
+
+    const posY = doc.lastAutoTable.finalY + 10;
+
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
-    doc.text(`Programação - ${dataAmanha}`, 14, currentY);
-    currentY += 4;
+    doc.setTextColor(0); // preto
+    doc.text("Programação de Amanhã", 14, posY);
+
     doc.autoTable({
-      startY: currentY,
-      head: [programacaoHeaders],
-      body: programacaoBody,
-      theme: "grid",
-      styles: {
-        fontSize: 10,
-        cellPadding: 3,
-        valign: 'middle'
-      },
+      startY: posY + 4,
+      head: [progColumns],
+      body: progRows,
+      margin: { left: 14, right: 14 },
+      theme: "striped",
       headStyles: {
-        fillColor: [255, 153, 0],
-        textColor: [0, 0, 0],
+        fillColor: [243, 156, 18],
+        textColor: 255,
+        halign: 'center',
+        fontStyle: 'bold'
       },
-      margin: { left: 14, right: 14 }
+      bodyStyles: {
+        halign: 'center',
+        valign: 'middle',
+        fontSize: 10
+      },
+      styles: {
+        lineColor: [220],
+        lineWidth: 0.2,
+        minCellHeight: 8
+      }
     });
 
-    doc.save(`relatorio_${dataHoje.replace(/\//g, "-")}.pdf`);
+    // === RODAPÉ COM DATA DE EMISSÃO ===
+    const pageHeight = doc.internal.pageSize.getHeight();
+    doc.setFontSize(9);
+    doc.setTextColor(130);
+    doc.text(`Emitido em: ${hojeFormatado}`, 283 - 10, pageHeight - 10, { align: 'right' });
 
-  } catch (erro) {
-    console.error("Erro ao gerar PDF:", erro);
-    alert("Erro ao gerar o PDF. Verifique sua conexão.");
-  }
+    doc.save(`relatorio_operacional_${hojeFormatado.replace(/\//g, "-")}.pdf`);
+  };
+
+  img.onerror = () => {
+    alert("Erro ao carregar logo. Verifique se 'logo.png' está no diretório do projeto.");
+  };
+}
+
+function formatDate(date) {
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
 }
