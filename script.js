@@ -252,7 +252,7 @@ function gerarPDF(resumoHoje, programacaoAmanha) {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.setTextColor(0); // preto
-    doc.text("Resumo de Hoje", 14, 48);
+    doc.text("Resumo", 14, 48);
 
     doc.autoTable({
       startY: 52,
@@ -291,7 +291,7 @@ function gerarPDF(resumoHoje, programacaoAmanha) {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.setTextColor(0); // preto
-    doc.text("Programação de Amanhã", 14, posY);
+    doc.text("Programação", 14, posY);
 
     doc.autoTable({
       startY: posY + 4,
