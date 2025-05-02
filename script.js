@@ -23,7 +23,7 @@ function formatDate(date) {
 
 function getAmanha(date) {
   const d = new Date(date);
-  if (d.getDay() === 5) d.setDate(d.getDate() + 3); // sexta-feira -> segunda
+  if (d.getDay() === 5) d.setDate(d.getDate() + 3);
   else d.setDate(d.getDate() + 1);
   return d;
 }
@@ -42,24 +42,54 @@ document.addEventListener("DOMContentLoaded", () => {
   carregarDashboard();
 });
 
+async function fetchComRetry(url, tentativas = 3) {
+  for (let i = 0; i < tentativas; i++) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Erro HTTP: " + response.status);
+      return await response.text();
+    } catch (erro) {
+      if (i === tentativas - 1) throw erro;
+      await new Promise(resolve => setTimeout(resolve, 1000)); // espera 1s
+    }
+  }
+}
+
 async function carregarDashboard() {
-  const [resumoResp, progResp] = await Promise.all([fetch(resumoUrl), fetch(programacaoUrl)]);
-  const [resumoCSV, programacaoCSV] = await Promise.all([resumoResp.text(), progResp.text()]);
+  const containerResumo = document.getElementById("resumoCards");
+  const containerProg = document.getElementById("programacaoCards");
+  const loading = document.getElementById("loadingWrapper");
 
-  const resumoData = csvToJson(resumoCSV);
-  const programacaoData = csvToJson(programacaoCSV);
+  containerResumo.innerHTML = "";
+  containerProg.innerHTML = "";
+  loading.classList.remove("hidden");
 
-  const hoje = new Date();
-  const amanha = getAmanha(hoje);
+  try {
+    const [resumoCSV, programacaoCSV] = await Promise.all([
+      fetchComRetry(resumoUrl),
+      fetchComRetry(programacaoUrl)
+    ]);
 
-  const hojeFormatada = formatDate(hoje);
-  const amanhaFormatada = formatDate(amanha);
+    const resumoData = csvToJson(resumoCSV);
+    const programacaoData = csvToJson(programacaoCSV);
 
-  const resumoHoje = resumoData.filter(item => item["DATA"] === hojeFormatada);
-  const programacaoAmanha = programacaoData.filter(item => item["DATA"] === amanhaFormatada);
+    const hoje = new Date();
+    const amanha = getAmanha(hoje);
+    const hojeFormatada = formatDate(hoje);
+    const amanhaFormatada = formatDate(amanha);
 
-  renderCards("resumoCards", resumoHoje, true);
-  renderCards("programacaoCards", programacaoAmanha, false);
+    const resumoHoje = resumoData.filter(item => item["DATA"] === hojeFormatada);
+    const programacaoAmanha = programacaoData.filter(item => item["DATA"] === amanhaFormatada);
+
+    renderCards("resumoCards", resumoHoje, true);
+    renderCards("programacaoCards", programacaoAmanha, false);
+  } catch (erro) {
+    console.error("Erro ao carregar dados:", erro);
+    containerResumo.innerHTML = "<p style='color: red;'>Erro ao carregar o resumo.</p>";
+    containerProg.innerHTML = "<p style='color: red;'>Erro ao carregar a programação.</p>";
+  } finally {
+    loading.classList.add("hidden");
+  }
 }
 
 function renderCards(containerId, data, isResumo) {
@@ -160,99 +190,3 @@ function atualizarCampoDescricao() {
     document.getElementById("inputDescricao").value = "";
   }
 }
-
-import("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js").then(jsPDFModule => {
-  import("https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js").then(() => {
-    document.getElementById('exportarPDF').addEventListener('click', async () => {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-
-      const imgLogo = new Image();
-      imgLogo.src = 'logo.png';
-
-      imgLogo.onload = async () => {
-        const pageWidth = doc.internal.pageSize.getWidth();
-
-        const logoWidth = 50;
-        const logoHeight = 20;
-        const logoX = (pageWidth - logoWidth) / 2;
-        doc.addImage(imgLogo, 'PNG', logoX, 10, logoWidth, logoHeight);
-
-        doc.setFontSize(18);
-        doc.setTextColor('#1A237E');
-        doc.text("📌 Relatório Operacional", pageWidth / 2, 35, { align: 'center' });
-
-        const formatarData = (d) => d.toLocaleDateString('pt-BR');
-
-        const hoje = new Date();
-        const amanha = new Date();
-        amanha.setDate(hoje.getDate() + 1);
-        const incluirFds = hoje.getDay() === 5;
-
-        const dataHoje = formatarData(hoje);
-        const dataAmanha = formatarData(amanha);
-        const dataSabado = formatarData(new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 1));
-        const dataSegunda = formatarData(new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 3));
-
-        const urlResumo = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyRRusn-fwNRzkeA5RKEZFDM3MnTCi-YFzM5oXvr6ZtG23PTgIJK3ubi9zJyIRZqBmFEysexyvk8lQ/pub?gid=0&single=true&output=csv';
-        const urlProg = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyRRusn-fwNRzkeA5RKEZFDM3MnTCi-YFzM5oXvr6ZtG23PTgIJK3ubi9zJyIRZqBmFEysexyvk8lQ/pub?gid=839921770&single=true&output=csv';
-
-        const carregar = async (url) => {
-          const res = await fetch(url);
-          const csv = await res.text();
-          const linhas = csv.trim().split('\n').map(l => l.split(','));
-          const header = linhas.shift();
-          return linhas.map(l => Object.fromEntries(l.map((v, i) => [header[i].trim(), v.trim()])));
-        };
-
-        const dadosResumo = (await carregar(urlResumo)).filter(l =>
-          l['DATA'] === dataHoje || (incluirFds && l['DATA'] === dataSabado)
-        );
-        const dadosProg = (await carregar(urlProg)).filter(l =>
-          l['DATA'] === dataAmanha || (incluirFds && l['DATA'] === dataSegunda)
-        );
-
-        let y = 45;
-        doc.setFontSize(14);
-        doc.setTextColor('#FF6F00');
-        doc.text(`📅 Resumo - ${dataHoje}${incluirFds ? ' + Sábado' : ''}`, 14, y);
-
-        doc.autoTable({
-          startY: y + 5,
-          head: [['Data', 'Cliente', 'Operação', 'Divergência?', 'Descrição']],
-          body: dadosResumo.map(d => [
-            d['DATA'], d['CLIENTE'], d['OPERAÇÃO'], d['HOUVE DIVERGENCIA?'], d['DESCRICAO']
-          ]),
-          styles: { fontSize: 10 },
-          headStyles: {
-            fillColor: [26, 35, 126],
-            textColor: 255,
-            halign: 'center',
-          },
-          alternateRowStyles: { fillColor: [240, 240, 240] },
-          margin: { top: 10, left: 14, right: 14 },
-        });
-
-        y = doc.lastAutoTable.finalY + 10;
-        doc.setTextColor('#FF6F00');
-        doc.text(`📅 Programação - ${dataAmanha}${incluirFds ? ' + Segunda' : ''}`, 14, y);
-
-        doc.autoTable({
-          startY: y + 5,
-          head: [['Data', 'Cliente', 'Operação']],
-          body: dadosProg.map(d => [d['DATA'], d['CLIENTE'], d['OPERAÇÃO']]),
-          styles: { fontSize: 10 },
-          headStyles: {
-            fillColor: [26, 35, 126],
-            textColor: 255,
-            halign: 'center',
-          },
-          alternateRowStyles: { fillColor: [240, 240, 240] },
-          margin: { top: 10, left: 14, right: 14 },
-        });
-
-        doc.save(`Relatorio-${dataHoje}.pdf`);
-      }; // <-- fechamento correto de imgLogo.onload
-    }); // <-- fechamento de addEventListener
-  }); // <-- fechamento do segundo import
-}); // <-- fechamento do primeiro import

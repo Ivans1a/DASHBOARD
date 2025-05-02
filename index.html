@@ -13,8 +13,8 @@
 <body>
   <header class="topbar">
     <div class="logo-container">
-      <img src="logo.png" alt="Logo da empresa" class="logo"/>
-    </div>
+      <img src="logo.png" alt="Logo" class="logo">
+    </div>    
     <nav class="topbar-actions">
       <a href="filtro.html" class="botao-filtro">🔍 Filtro por Data</a>
       <button onclick="atualizarPagina()" class="botao-acao">🔄 Atualizar</button>
@@ -33,7 +33,12 @@
       <h2 class="section-title">Resumo de Hoje</h2>
       <div class="dashboard" id="resumoCards"></div>
     </section>
-
+     
+    <div id="loadingWrapper" class="hidden">
+      <div class="spinner"></div>
+      <p class="loading-text">Atualizando dados...</p>
+    </div>
+    
     <section>
       <h2 class="section-title">Programação de Amanhã</h2>
       <div class="dashboard" id="programacaoCards"></div>
@@ -144,5 +149,5 @@
       };
     });
   </script>
-</body>
+</body> 
 </html>
