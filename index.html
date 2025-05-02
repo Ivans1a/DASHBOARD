@@ -6,20 +6,25 @@
   <title>Dashboard Operacional</title>
   <link rel="stylesheet" href="style.css"/>
   <link rel="icon" type="image/png" href="logo.png"/>
+  <script src="script.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
   <header class="topbar">
     <div class="logo-container">
-      <img src="logo.png" alt="Logo" class="logo"/>
+      <img src="logo.png" alt="Logo da empresa" class="logo"/>
     </div>
-    <div class="button-group">
-      <button onclick="location.reload()">Atualizar</button>
-      <button onclick="window.location.href='graficos.html'">Ver Gráficos</button>
-    </div>
+    <nav class="topbar-actions">
+      <a href="filtro.html" class="botao-filtro">🔍 Filtro por Data</a>
+      <button onclick="atualizarPagina()" class="botao-acao">🔄 Atualizar</button>
+      <button onclick="window.location.href='graficos.html'" class="botao-acao">📊 Ver Gráficos</button>
+      <button id="exportarPdf" class="botao-exportar">📄 Exportar PDF</button>
+    </nav>
   </header>
 
   <main class="container">
-    <h1>Dashboard de Operações</h1>
+    <h1>📌 Dashboard de Operações</h1>
     <p class="date-info">
       <span id="data-atual"></span> | <span id="data-amanha"></span>
     </p>
@@ -35,19 +40,22 @@
     </section>
   </main>
 
-  <!-- Modal -->
-  <div id="modal" class="modal hidden">
+  <div id="overlay-carregando" class="hidden">
+    <div class="loader"></div>
+    <p class="mensagem">Atualizando dados, por favor aguarde...</p>
+  </div>
+
+  <!-- Modal de Detalhes -->
+  <div id="modal" class="modal hidden" role="dialog">
     <div class="modal-content">
       <span class="close" onclick="fecharModal()">&times;</span>
       <h3 id="modalOperacao"></h3>
 
-      <!-- Abas -->
       <div class="modal-tabs">
         <button id="tab-info" class="active" onclick="mostrarAba('info')">Informações</button>
         <button id="tab-div" onclick="mostrarAba('div')">Divergência</button>
       </div>
 
-      <!-- Aba: Informações -->
       <div id="modalInfo" class="modal-tab-content">
         <p><strong>Cliente:</strong> <span id="modalCliente"></span></p>
         <p><strong>Data:</strong> <span id="modalData"></span></p>
@@ -55,27 +63,86 @@
         <p><strong>Divergência:</strong> <span id="modalDivergencia"></span></p>
       </div>
 
-      <!-- Aba: Divergência -->
       <div id="modalDiv" class="modal-tab-content hidden">
-        <div>
-          <label for="inputDivergencia"><strong>Houve divergência?</strong></label>
-          <select id="inputDivergencia">
-            <option value="">Selecione</option>
-            <option value="sim">Sim</option>
-            <option value="não">Não</option>
-          </select>
-        </div>
-
+        <p><strong>Divergência:</strong> <span id="modalDescricao">Nenhuma divergência registrada.</span></p>
         <div id="campoDescricao" class="hidden">
           <label for="inputDescricao"><strong>Descreva a divergência:</strong></label>
           <textarea id="inputDescricao" rows="4" placeholder="Detalhe a divergência..."></textarea>
         </div>
-
-        <button id="salvarDivergencia" onclick="enviarDivergencia()">Salvar</button>
       </div>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    function atualizarPagina() {
+      location.reload();
+    }
+  </script>
+
+  <script>
+    document.getElementById('exportarPdf').addEventListener('click', async () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      const imgLogo = new Image();
+      imgLogo.src = 'logo.png';
+
+      imgLogo.onload = async () => {
+        doc.addImage(imgLogo, 'PNG', 10, 10, 40, 20);
+        doc.setFontSize(16);
+        doc.text("Relatório Operacional", 105, 25, null, null, 'center');
+
+        const formatarData = (d) => d.toLocaleDateString('pt-BR');
+
+        const hoje = new Date();
+        const amanha = new Date();
+        amanha.setDate(hoje.getDate() + 1);
+
+        const incluirFds = hoje.getDay() === 5;
+        const dataHoje = formatarData(hoje);
+        const dataAmanha = formatarData(amanha);
+        const dataSabado = formatarData(new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 1));
+        const dataSegunda = formatarData(new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 3));
+
+        const urlResumo = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyRRusn-fwNRzkeA5RKEZFDM3MnTCi-YFzM5oXvr6ZtG23PTgIJK3ubi9zJyIRZqBmFEysexyvk8lQ/pub?gid=0&single=true&output=csv';
+        const urlProg = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyRRusn-fwNRzkeA5RKEZFDM3MnTCi-YFzM5oXvr6ZtG23PTgIJK3ubi9zJyIRZqBmFEysexyvk8lQ/pub?gid=839921770&single=true&output=csv';
+
+        const carregar = async (url) => {
+          const res = await fetch(url);
+          const csv = await res.text();
+          const linhas = csv.trim().split('\n').map(l => l.split(','));
+          const header = linhas.shift();
+          return linhas.map(l => Object.fromEntries(l.map((v, i) => [header[i].trim(), v.trim()])));
+        };
+
+        const dadosResumo = (await carregar(urlResumo)).filter(l =>
+          l['DATA'] === dataHoje || (incluirFds && l['DATA'] === dataSabado)
+        );
+        const dadosProg = (await carregar(urlProg)).filter(l =>
+          l['DATA'] === dataAmanha || (incluirFds && l['DATA'] === dataSegunda)
+        );
+
+        let y = 40;
+        doc.text(`Resumo - ${dataHoje}${incluirFds ? ' + Sábado' : ''}`, 14, y);
+        doc.autoTable({
+          startY: y + 5,
+          head: [['Data', 'Cliente', 'Operação', 'Divergência?', 'Descrição']],
+          body: dadosResumo.map(d => [
+            d['DATA'], d['CLIENTE'], d['OPERAÇÃO'], d['HOUVE DIVERGENCIA?'], d['DESCRICAO']
+          ])
+        });
+
+        y = doc.lastAutoTable.finalY + 10;
+        doc.text(`Programação - ${dataAmanha}${incluirFds ? ' + Segunda' : ''}`, 14, y);
+        doc.autoTable({
+          startY: y + 5,
+          head: [['Data', 'Cliente', 'Operação']],
+          body: dadosProg.map(d => [d['DATA'], d['CLIENTE'], d['OPERAÇÃO']])
+        });
+
+        doc.save(`Relatorio-${dataHoje}.pdf`);
+      };
+    });
+  </script>
 </body>
 </html>
