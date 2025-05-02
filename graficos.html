@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Gráficos de Operações</title>
+  <link rel="stylesheet" href="graficos.css">
+</head>
+<body class="dark-mode">
+  <header class="header">
+    <img src="logo.png" alt="Logo da Empresa" class="logo">
+    <h1>Dashboard de Gráficos</h1>
+    <button id="toggleTheme">Alternar Tema</button>
+  </header>
+
+  <section class="cards-totais">
+    <div class="card-total">
+      <h3>Total de Clientes</h3>
+      <p id="totalClientes">--</p>
+    </div>
+    <div class="card-total">
+      <h3>Cliente que mais opera</h3>
+      <p id="clienteMaisOpera">--</p>
+    </div>
+    <div class="card-total">
+      <h3>Operação mais comum</h3>
+      <p id="operacaoMaisComum">--</p>
+    </div>
+    <div class="card-total">
+      <h3>Total de Avarias</h3>
+      <p id="totalAvarias">--</p>
+    </div>
+  </section>
+
+  <section class="filtros">
+    <select id="filtroCliente">
+      <option value="">Filtrar por Cliente</option>
+    </select>
+    <input type="date" id="filtroData">
+    <input type="text" id="filtroProcesso" placeholder="Filtrar por Processo">
+    <button id="aplicarFiltros">Aplicar Filtros</button>
+  </section>
+
+  <section class="graficos-container">
+    <div>
+      <h3>Ranking por Cliente</h3>
+      <canvas id="graficoCliente"></canvas>
+    </div>
+    <div>
+      <h3>Ranking por Operação</h3>
+      <canvas id="graficoOperacao"></canvas>
+    </div>
+    <div>
+      <h3>Avarias</h3>
+      <canvas id="graficoAvarias"></canvas>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="graficos.js"></script>
+</body>
+</html>
