@@ -77,6 +77,12 @@ body::before {
     display: flex;
   }
 
+  .logo-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* espaço entre logo e botão */
+}
+
   .topbar {
     flex-direction: column;
     align-items: flex-start;
@@ -93,7 +99,18 @@ body::before {
 
   .topbar-actions.show {
     display: flex;
+  flex-direction: column;
+  align-items: center;  /* centraliza horizontalmente */
+  justify-content: center; /* opcional: centraliza verticalmente */
+  gap: 12px;
   }
+
+  .topbar-actions.show .botao {
+  width: 80%;       /* ou 100%, ou um valor que você quiser */
+  max-width: 220px; /* limitar tamanho máximo */
+  text-align: center;
+  margin: 8px 0;    /* espaçamento vertical entre botões */
+}
 
   .botao {
     width: 90%;
