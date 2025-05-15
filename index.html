@@ -4,9 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard Operacional</title>
-  <link rel="icon" type="image/png" href="icone.png">
-  <link rel="stylesheet" href="style.css"/>
   <link rel="icon" type="image/png" href="logo-branca.png"/>
+  <link rel="stylesheet" href="style.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -16,111 +15,107 @@
 <body>
 <header class="topbar">
   <div class="logo-container">
-   <img src="logo-branca.png" alt="Logo" class="logo" /><button class="menu-toggle" onclick="toggleMenu()">☰</button>  
+    <img src="logo-branca.png" alt="Logo" class="logo" />
+    <button class="menu-toggle" onclick="toggleMenu()" aria-label="Abrir menu">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </button>
   </div>
 
-
-  <div class="topbar-actions" id="menuMobile">
+  <nav class="topbar-actions" id="menuMobile">
     <a href="filtro.html" class="botao botao-filtro" title="Filtrar por Data">🔍 Filtro</a>
     <button onclick="atualizarPagina()" class="botao" title="Recarregar Página">🔄 Atualizar</button>
     <button onclick="window.location.href='graficos.html'" class="botao" title="Ver Gráficos">📊 Gráficos</button>
     <button id="exportarPdf" class="botao botao-exportar" title="Exportar PDF">📄 PDF</button>
-  </div>
+  </nav>
 </header>
 
-  <main class="container">
-    <h1>📌 Dashboard de Operações</h1>
-    <p class="date-info">
-      <span id="data-atual"></span> | <span id="data-amanha"></span>
-    </p>
+<main class="container">
+  <h1>📌 Dashboard de Operações</h1>
+  <p class="date-info">
+    <span id="data-atual"></span> | <span id="data-amanha"></span>
+  </p>
 
-    <section aria-labelledby="titulo-resumo">
-      <h2 id="titulo-resumo" class="section-title">Resumo de Hoje</h2>
-      <div class="dashboard" id="resumoCards"></div>
-    </section>
+  <section aria-labelledby="titulo-resumo">
+    <h2 id="titulo-resumo" class="section-title">Resumo de Hoje</h2>
+    <div class="dashboard" id="resumoCards"></div>
+  </section>
 
-    <div id="loadingWrapper" class="hidden">
-      <div class="spinner"></div>
-      <p class="loading-text">Atualizando dados...</p>
-    </div>
-    
-    <section aria-labelledby="titulo-prog">
-      <h2 id="titulo-prog" class="section-title">Programação de Amanhã</h2>
-      <div class="dashboard" id="programacaoCards"></div>
-    </section>
-  </main>
-
-  <div id="overlay-carregando" class="hidden">
-    <div class="loader"></div>
-    <p class="mensagem">Atualizando dados, por favor aguarde...</p>
+  <div id="loadingWrapper" class="hidden">
+    <div class="spinner"></div>
+    <p class="loading-text">Atualizando dados...</p>
   </div>
+  
+  <section aria-labelledby="titulo-prog">
+    <h2 id="titulo-prog" class="section-title">Programação de Amanhã</h2>
+    <div class="dashboard" id="programacaoCards"></div>
+  </section>
+</main>
 
-  <!-- Modal de Detalhes -->
-  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
-    <div class="modal-content">
-      <span class="close" onclick="fecharModal()" role="button" aria-label="Fechar modal">&times;</span>
-      <h3 id="modalOperacao"></h3>
+<div id="overlay-carregando" class="hidden">
+  <div class="loader"></div>
+  <p class="mensagem">Atualizando dados, por favor aguarde...</p>
+</div>
 
-      <div class="modal-tabs" role="tablist">
-        <button id="tab-info" class="active" onclick="mostrarAba('info')" role="tab">Informações</button>
-        <button id="tab-div" onclick="mostrarAba('div')" role="tab">Divergência</button>
-      </div>
+<!-- Modal -->
+<div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modal-content">
+    <span class="close" onclick="fecharModal()" role="button" aria-label="Fechar modal">&times;</span>
+    <h3 id="modalOperacao"></h3>
 
-      <div id="modalInfo" class="modal-tab-content">
-        <p><strong>Cliente:</strong> <span id="modalCliente"></span></p>
-        <p><strong>Data:</strong> <span id="modalData"></span></p>
-        <p><strong>Observação:</strong> <span id="modalObs"></span></p>
-        <p><strong>Divergência:</strong> <span id="modalDivergencia"></span></p>
-      </div>
+    <div class="modal-tabs" role="tablist">
+      <button id="tab-info" class="active" onclick="mostrarAba('info')" role="tab">Informações</button>
+      <button id="tab-div" onclick="mostrarAba('div')" role="tab">Divergência</button>
+    </div>
 
-      <div id="modalDiv" class="modal-tab-content hidden">
-        <p><strong>Divergência:</strong> <span id="modalDescricao">Nenhuma divergência registrada.</span></p>
-        <div id="campoDescricao" class="hidden">
-          <label for="inputDescricao"><strong>Descreva a divergência:</strong></label>
-          <textarea id="inputDescricao" rows="4" placeholder="Detalhe a divergência..."></textarea>
-        </div>
+    <div id="modalInfo" class="modal-tab-content">
+      <p><strong>Cliente:</strong> <span id="modalCliente"></span></p>
+      <p><strong>Data:</strong> <span id="modalData"></span></p>
+      <p><strong>Observação:</strong> <span id="modalObs"></span></p>
+      <p><strong>Divergência:</strong> <span id="modalDivergencia"></span></p>
+    </div>
+
+    <div id="modalDiv" class="modal-tab-content hidden">
+      <p><strong>Divergência:</strong> <span id="modalDescricao">Nenhuma divergência registrada.</span></p>
+      <div id="campoDescricao" class="hidden">
+        <label for="inputDescricao"><strong>Descreva a divergência:</strong></label>
+        <textarea id="inputDescricao" rows="4" placeholder="Detalhe a divergência..."></textarea>
       </div>
     </div>
   </div>
-
-  <script>
-    function atualizarPagina() {
-      location.reload();
-    }
-  </script>
-
-  <script>
-  const menu = document.getElementById('menuMobile');
-  const toggleButton = document.querySelector('.menu-toggle');
-
-  function toggleMenu() {
-    menu.classList.toggle('show');
-  }
-
-  // Fecha o menu ao clicar fora dele
-  document.addEventListener('click', function(event) {
-    const isClickInside = menu.contains(event.target) || toggleButton.contains(event.target);
-    if (!isClickInside && menu.classList.contains('show')) {
-      menu.classList.remove('show');
-    }
-  });
-
-  // Fecha o menu ao clicar em um dos botões
-  menu.addEventListener('click', function(event) {
-    if (event.target.tagName === 'A' || event.target.tagName === 'BUTTON') {
-      menu.classList.remove('show');
-    }
-  });
-</script>
+</div>
 
 <script>
-  function toggleMenu() {
-    document.querySelector('.topbar-actions').classList.toggle('show');
-  }
-
   function atualizarPagina() {
     location.reload();
   }
+
+  function toggleMenu() {
+    const menu = document.getElementById('menuMobile');
+    const toggleButton = document.querySelector('.menu-toggle');
+    menu.classList.toggle('show');
+    toggleButton.classList.toggle('active');
+  }
+
+  // Fecha o menu ao clicar fora
+  document.addEventListener('click', function (event) {
+    const menu = document.getElementById('menuMobile');
+    const toggleButton = document.querySelector('.menu-toggle');
+    const isClickInside = menu.contains(event.target) || toggleButton.contains(event.target);
+    if (!isClickInside && menu.classList.contains('show')) {
+      menu.classList.remove('show');
+      toggleButton.classList.remove('active');
+    }
+  });
+
+  // Fecha o menu ao clicar em uma opção
+  document.getElementById('menuMobile').addEventListener('click', function (event) {
+    if (event.target.tagName === 'A' || event.target.tagName === 'BUTTON') {
+      this.classList.remove('show');
+      document.querySelector('.menu-toggle').classList.remove('active');
+    }
+  });
 </script>
 
 </body>
