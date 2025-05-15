@@ -464,3 +464,14 @@ body::before {
     grid-template-columns: 1fr;
   }
 }
+.menu-toggle {
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.menu-toggle:active {
+  transform: scale(1.1);
+}

@@ -90,10 +90,27 @@
   </script>
 
   <script>
+  const menu = document.getElementById('menuMobile');
+  const toggleButton = document.querySelector('.menu-toggle');
+
   function toggleMenu() {
-    const menu = document.getElementById('menuMobile');
     menu.classList.toggle('show');
   }
+
+  // Fecha o menu ao clicar fora dele
+  document.addEventListener('click', function(event) {
+    const isClickInside = menu.contains(event.target) || toggleButton.contains(event.target);
+    if (!isClickInside && menu.classList.contains('show')) {
+      menu.classList.remove('show');
+    }
+  });
+
+  // Fecha o menu ao clicar em um dos botões
+  menu.addEventListener('click', function(event) {
+    if (event.target.tagName === 'A' || event.target.tagName === 'BUTTON') {
+      menu.classList.remove('show');
+    }
+  });
 </script>
 
 <script>
