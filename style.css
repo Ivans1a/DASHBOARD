@@ -4,7 +4,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Inter', sans-serif;
-  background: #aab2b965;
+  background: #69727a70;
   color: #1e1e1e;
   min-height: 100vh;
 }
@@ -15,7 +15,7 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 14px 30px;
-  background-color: #2a4e77e5;
+  background-color: #2c3e50;
   box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
   position: sticky;
   top: 0;
@@ -23,7 +23,7 @@ body {
 }
 
 .logo {
-  height: 45px;
+  height: 55px;
   object-fit: contain;
 }
 
@@ -71,7 +71,7 @@ body {
 h1 {
   text-align: center;
   margin-top: 10px;
-  font-size: 2rem;
+  font-size: 3rem;
   font-weight: 600;
   color: #002b5b;
 }
@@ -79,8 +79,8 @@ h1 {
 .date-info {
   text-align: center;
   font-size: 1rem;
-  color: #555;
-  margin-bottom: 30px;
+  color: #000000;
+  margin-bottom: 50px;
 }
 
 /* Seções */
@@ -302,4 +302,21 @@ textarea {
 
 .hidden {
   display: none !important;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 90%;
+  margin-top: 5%;
+  background-image: url('/BACK.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.20; /* define a transparência */
+  pointer-events: none; /* permite clicar nos elementos abaixo */
+  z-index: -1;
 }
