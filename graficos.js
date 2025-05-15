@@ -1,134 +1,106 @@
-let dadosResumo = [];
+// Novo código JS com dados carregando corretamente, layout ajustado e novos campos
+
+const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyRRusn-fwNRzkeA5RKEZFDM3MnTCi-YFzM5oXvr6ZtG23PTgIJK3ubi9zJyIRZqBmFEysexyvk8lQ/pub?gid=0&single=true&output=tsv';
+
+let dados = [];
 
 async function carregarDados() {
-  const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTyRRusn-fwNRzkeA5RKEZFDM3MnTCi-YFzM5oXvr6ZtG23PTgIJK3ubi9zJyIRZqBmFEysexyvk8lQ/pub?gid=0&single=true&output=tsv'; // substitua pela URL correta
-  const resposta = await fetch(url);
-  const texto = await resposta.text();
-  const linhas = texto.trim().split('\n');
-  const cabecalhos = linhas[0].split(',');
-  dadosResumo = linhas.slice(1).map(linha => {
-    const valores = linha.split(',');
-    return cabecalhos.reduce((obj, col, i) => {
-      obj[col.trim()] = valores[i]?.trim();
-      return obj;
-    }, {});
-  });
-
-  preencherFiltros();
-  extrairTotais();
-  gerarGraficos(dadosResumo);
+  const response = await fetch(url);
+  const tsv = await response.text();
+  const linhas = tsv.trim().split('\n').map(l => l.split('\t'));
+  const cabecalho = linhas.shift();
+  dados = linhas.map(l => Object.fromEntries(l.map((v, i) => [cabecalho[i], v])));
+  atualizarFiltros();
+  atualizarDashboard();
+  
 }
 
-function preencherFiltros() {
-  const clienteSelect = document.getElementById('filtroCliente');
-  const clientesUnicos = [...new Set(dadosResumo.map(l => l['CLIENTE']))].sort();
-  clientesUnicos.forEach(cliente => {
-    const opt = document.createElement('option');
-    opt.value = cliente;
-    opt.textContent = cliente;
-    clienteSelect.appendChild(opt);
-  });
+function atualizarFiltros() {
+  const clientes = [...new Set(dados.map(d => d.CLIENTE))];
+  const select = document.getElementById('filtroCliente');
+  select.innerHTML = '<option value="">Todos os clientes</option>' +
+    clientes.map(c => `<option value="${c}">${c}</option>`).join('');
 }
 
-function extrairTotais() {
-  const totalClientes = new Set(dadosResumo.map(l => l['CLIENTE'])).size;
-  const clienteMais = maisFrequente(dadosResumo.map(l => l['CLIENTE']));
-  const operacaoMais = maisFrequente(dadosResumo.map(l => l['OPERAÇÃO']));
-  const totalAvarias = dadosResumo.filter(l => l['HOUVE DIVERGENCIA?']?.toLowerCase() === 'sim').length;
-
-  document.getElementById('totalClientes').innerText = totalClientes;
-  document.getElementById('clienteMaisOpera').innerText = clienteMais;
-  document.getElementById('operacaoMaisComum').innerText = operacaoMais;
-  document.getElementById('totalAvarias').innerText = totalAvarias;
-}
-
-function maisFrequente(lista) {
-  const contagem = {};
-  lista.forEach(item => contagem[item] = (contagem[item] || 0) + 1);
-  return Object.entries(contagem).sort((a, b) => b[1] - a[1])[0]?.[0] || '--';
-}
-
-function aplicarFiltros() {
+function aplicarFiltro() {
   const cliente = document.getElementById('filtroCliente').value;
-  const data = document.getElementById('filtroData').value;
-  const processo = document.getElementById('filtroProcesso').value.toLowerCase();
+  const dataInicio = document.getElementById('filtroDataInicio').value;
+  const dataFim = document.getElementById('filtroDataFim').value;
 
-  let filtrado = dadosResumo;
+  let filtrado = [...dados];
 
-  if (cliente) filtrado = filtrado.filter(l => l['CLIENTE'] === cliente);
-  if (data) filtrado = filtrado.filter(l => l['DATA'] === data);
-  if (processo) filtrado = filtrado.filter(l => l['DESCRICAO']?.toLowerCase().includes(processo));
+  if (cliente) filtrado = filtrado.filter(d => d.CLIENTE === cliente);
+  if (dataInicio) filtrado = filtrado.filter(d => new Date(d.DATA) >= new Date(dataInicio));
+  if (dataFim) filtrado = filtrado.filter(d => new Date(d.DATA) <= new Date(dataFim));
+
+  atualizarDashboard(filtrado);
+}
+
+function atualizarDashboard(filtrado = dados) {
+  const totalClientes = new Set(filtrado.map(d => d.CLIENTE)).size;
+  const clienteMaisFrequente = filtrarMaisFrequente(filtrado.map(d => d.CLIENTE));
+  const operacaoMaisComum = filtrarMaisFrequente(filtrado.map(d => d.OPERAÇÃO));
+  const totalDivergencias = filtrado.filter(d => d['HOUVE DIVERGENCIA?'].toLowerCase() === 'sim').length;
+
+  document.getElementById('cardTotalClientes').innerText = totalClientes;
+  document.getElementById('cardClienteFrequente').innerText = clienteMaisFrequente;
+  document.getElementById('cardOperacaoComum').innerText = operacaoMaisComum;
+  document.getElementById('cardTotalDivergencias').innerText = totalDivergencias;
 
   gerarGraficos(filtrado);
 }
 
-function gerarGraficos(data) {
-  gerarGraficoRanking('graficoCliente', data.map(l => l['CLIENTE']), 'Ranking por Cliente');
-  gerarGraficoRanking('graficoOperacao', data.map(l => l['OPERAÇÃO']), 'Ranking por Operação');
-  gerarGraficoAvaria(data);
+function filtrarMaisFrequente(lista) {
+  return lista.reduce((acc, val) => {
+    acc[val] = (acc[val] || 0) + 1;
+    return acc;
+  }, {});
 }
 
-function gerarGraficoRanking(canvasId, lista, titulo) {
-  const ctx = document.getElementById(canvasId).getContext('2d');
-  const contagem = {};
-  lista.forEach(i => contagem[i] = (contagem[i] || 0) + 1);
-  const labels = Object.keys(contagem);
-  const valores = Object.values(contagem);
+function gerarGraficos(filtrado) {
+  const ctx1 = document.getElementById('grafico1').getContext('2d');
+  const ctx2 = document.getElementById('grafico2').getContext('2d');
 
-  if (window[canvasId]) window[canvasId].destroy();
+  const operacoes = filtrado.reduce((acc, val) => {
+    acc[val.OPERAÇÃO] = (acc[val.OPERAÇÃO] || 0) + 1;
+    return acc;
+  }, {});
 
-  window[canvasId] = new Chart(ctx, {
+  const divergencias = filtrado.reduce((acc, val) => {
+    if (val['HOUVE DIVERGENCIA?'].toLowerCase() === 'sim') {
+      acc[val.OPERAÇÃO] = (acc[val.OPERAÇÃO] || 0) + 1;
+    }
+    return acc;
+  }, {});
+
+  if (window.grafico1) window.grafico1.destroy();
+  if (window.grafico2) window.grafico2.destroy();
+
+  window.grafico1 = new Chart(ctx1, {
     type: 'bar',
     data: {
-      labels,
+      labels: Object.keys(operacoes),
       datasets: [{
-        label: titulo,
-        data: valores,
-        backgroundColor: '#4f46e5'
+        label: 'Operações por tipo',
+        data: Object.values(operacoes),
+        backgroundColor: '#238636'
       }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        title: { display: true, text: titulo }
-      }
     }
   });
-}
 
-function gerarGraficoAvaria(data) {
-  const ctx = document.getElementById('graficoAvarias').getContext('2d');
-  const sim = data.filter(l => l['HOUVE DIVERGENCIA?']?.toLowerCase() === 'sim').length;
-  const nao = data.length - sim;
-
-  if (window['graficoAvarias']) window['graficoAvarias'].destroy();
-
-  window['graficoAvarias'] = new Chart(ctx, {
+  window.grafico2 = new Chart(ctx2, {
     type: 'pie',
     data: {
-      labels: ['Com Avaria', 'Sem Avaria'],
+      labels: Object.keys(divergencias),
       datasets: [{
-        data: [sim, nao],
-        backgroundColor: ['#ef4444', '#10b981']
+        label: 'Divergências por operação',
+        data: Object.values(divergencias),
+        backgroundColor: ['#f87171', '#fbbf24', '#34d399', '#60a5fa']
       }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        title: {
-          display: true,
-          text: 'Distribuição de Avarias'
-        }
-      }
     }
   });
 }
 
-document.getElementById('aplicarFiltros').addEventListener('click', aplicarFiltros);
-document.getElementById('toggleTheme').addEventListener('click', () => {
-  document.body.classList.toggle('dark-mode');
-  document.body.classList.toggle('light-mode');
-});
+document.getElementById('aplicarFiltro').addEventListener('click', aplicarFiltro);
 
 window.onload = carregarDados;

@@ -26,6 +26,46 @@ function formatDate(date) {
   return `${day}/${month}/${year}`;
 }
 
+function getDatasParaDashboard(tipo) {
+  const hoje = new Date();
+  const datas = [];
+
+  const diaSemana = hoje.getDay(); // 0 = domingo, 1 = segunda, ..., 5 = sexta
+
+  if (tipo === "resumo") {
+    if (diaSemana === 1) {
+      // Segunda-feira: mostra sábado, domingo e segunda
+      const sabado = new Date(hoje);
+      sabado.setDate(hoje.getDate() - 2);
+      const domingo = new Date(hoje);
+      domingo.setDate(hoje.getDate() - 1);
+      datas.push(sabado, domingo, hoje);
+    } else {
+      datas.push(hoje);
+    }
+  }
+
+  if (tipo === "programacao") {
+    const amanha = new Date(hoje);
+    if (diaSemana === 5) {
+      // Sexta-feira: mostra sábado, domingo e segunda
+      const sabado = new Date(hoje);
+      sabado.setDate(hoje.getDate() + 1);
+      const domingo = new Date(hoje);
+      domingo.setDate(hoje.getDate() + 2);
+      const segunda = new Date(hoje);
+      segunda.setDate(hoje.getDate() + 3);
+      datas.push(sabado, domingo, segunda);
+    } else {
+      amanha.setDate(hoje.getDate() + 1);
+      datas.push(amanha);
+    }
+  }
+
+  return datas.map(formatDate);
+}
+
+
 function getAmanha(date) {
   const d = new Date(date);
   if (d.getDay() === 5) d.setDate(d.getDate() + 3);
@@ -49,11 +89,12 @@ document.addEventListener("DOMContentLoaded", () => {
   if (botao) {
     botao.addEventListener("click", () => {
       if (typeof gerarPDF === "function") {
-        const hoje = formatDate(new Date());
-const amanha = formatDate(getAmanha(new Date()));
+        const datasResumo = getDatasParaDashboard("resumo");
+const datasProgramacao = getDatasParaDashboard("programacao");
 
-const resumoHoje = resumoData.filter(item => item["DATA"] === hoje);
-const programacaoAmanha = programacaoData.filter(item => item["DATA"] === amanha);
+const resumoHoje = resumoData.filter(item => datasResumo.includes(item["DATA"]));
+const programacaoAmanha = programacaoData.filter(item => datasProgramacao.includes(item["DATA"]));
+
 
 gerarPDF(resumoHoje, programacaoAmanha);
       } else {
@@ -104,13 +145,11 @@ async function carregarDashboard() {
     resumoData = csvToJson(resumoCSV);
     programacaoData = csvToJson(programacaoCSV);
 
-    const hoje = new Date();
-    const amanha = getAmanha(hoje);
-    const hojeFormatada = formatDate(hoje);
-    const amanhaFormatada = formatDate(amanha);
+const datasResumo = getDatasParaDashboard("resumo");
+const datasProgramacao = getDatasParaDashboard("programacao");
 
-    const resumoHoje = resumoData.filter(item => item["DATA"] === hojeFormatada);
-    const programacaoAmanha = programacaoData.filter(item => item["DATA"] === amanhaFormatada);
+const resumoHoje = resumoData.filter(item => datasResumo.includes(item["DATA"]));
+const programacaoAmanha = programacaoData.filter(item => datasProgramacao.includes(item["DATA"]));
 
     renderCards("resumoCards", resumoHoje, true);
     renderCards("programacaoCards", programacaoAmanha, false);
@@ -230,7 +269,7 @@ function gerarPDF(resumoHoje, programacaoAmanha) {
 
   img.onload = () => {
     // === TOPO COM LOGO E TÍTULO ===
-    doc.addImage(img, "PNG", 125, 10, 50, 15); // logo centralizada
+    doc.addImage(img, "PNG", 110, 10, 65, 15); // logo centralizada
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(22);
