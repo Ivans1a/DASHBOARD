@@ -16,10 +16,9 @@
 <body>
 <header class="topbar">
   <div class="logo-container">
-    <img src="logo-branca.png" alt="Logo" class="logo" />
+   <img src="logo-branca.png" alt="Logo" class="logo" /><button class="menu-toggle" onclick="toggleMenu()">☰</button>  
   </div>
 
-  <button class="menu-toggle" onclick="toggleMenu()" aria-label="Menu">☰</button>
 
   <div class="topbar-actions" id="menuMobile">
     <a href="filtro.html" class="botao botao-filtro" title="Filtrar por Data">🔍 Filtro</a>
@@ -89,11 +88,21 @@
       location.reload();
     }
   </script>
-  
+
   <script>
   function toggleMenu() {
     const menu = document.getElementById('menuMobile');
     menu.classList.toggle('show');
+  }
+</script>
+
+<script>
+  function toggleMenu() {
+    document.querySelector('.topbar-actions').classList.toggle('show');
+  }
+
+  function atualizarPagina() {
+    location.reload();
   }
 </script>
 
