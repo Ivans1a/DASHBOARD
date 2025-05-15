@@ -14,17 +14,20 @@
   <script src="pdf.js" defer></script>
 </head>
 <body>
-  <header class="topbar">
-    <div class="logo-container">
-      <img src="logo-branca.png" alt="Logo" class="logo">
-    </div>    
-    <div class="topbar-actions">
-      <a href="filtro.html" class="botao botao-filtro" title="Filtrar por Data">🔍 Filtro</a>
-      <button onclick="atualizarPagina()" class="botao" title="Recarregar Página">🔄 Atualizar</button>
-      <button onclick="window.location.href='graficos.html'" class="botao" title="Ver Gráficos">📊 Gráficos</button>
-      <button id="exportarPdf" class="botao botao-exportar" title="Exportar Relatório em PDF">📄 PDF</button>
-    </div>
-  </header>
+<header class="topbar">
+  <div class="logo-container">
+    <img src="logo-branca.png" alt="Logo" class="logo" />
+  </div>
+
+  <button class="menu-toggle" onclick="toggleMenu()" aria-label="Menu">☰</button>
+
+  <div class="topbar-actions" id="menuMobile">
+    <a href="filtro.html" class="botao botao-filtro" title="Filtrar por Data">🔍 Filtro</a>
+    <button onclick="atualizarPagina()" class="botao" title="Recarregar Página">🔄 Atualizar</button>
+    <button onclick="window.location.href='graficos.html'" class="botao" title="Ver Gráficos">📊 Gráficos</button>
+    <button id="exportarPdf" class="botao botao-exportar" title="Exportar PDF">📄 PDF</button>
+  </div>
+</header>
 
   <main class="container">
     <h1>📌 Dashboard de Operações</h1>
@@ -86,5 +89,13 @@
       location.reload();
     }
   </script>
+  
+  <script>
+  function toggleMenu() {
+    const menu = document.getElementById('menuMobile');
+    menu.classList.toggle('show');
+  }
+</script>
+
 </body>
 </html>
