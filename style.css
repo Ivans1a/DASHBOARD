@@ -105,13 +105,6 @@ body::before {
   gap: 12px;
   }
 
-  .topbar-actions.show .botao {
-  width: 80%;       /* ou 100%, ou um valor que você quiser */
-  max-width: 220px; /* limitar tamanho máximo */
-  text-align: center;
-  margin: 8px 0;    /* espaçamento vertical entre botões */
-}
-
   .botao {
     width: 90%;
     max-width: 240px;
@@ -153,7 +146,7 @@ body::before {
 
 h1 {
   text-align: center;
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: 600;
   color: #002b5b;
   margin: 12px 0 24px;
