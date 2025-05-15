@@ -103,7 +103,7 @@ h1 {
 
 .dashboard {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
   padding: 10px 0;
 }
@@ -317,28 +317,15 @@ body::before {
 }
 
 /* Responsivo para celular */
-@media (max-width: 600px) {
-   .card {
-    padding: 14px;
-    font-size: 0.9rem;
-  }
-
-  .card h3 {
-    font-size: 1rem;
-  }
-
-  .card p {
-    font-size: 0.85rem;
-  }
-
+@media (max-width: 768px) {
   .topbar {
     flex-direction: column;
     align-items: center;
-    padding: 10px 16px;
+    padding: 5px 5px;
   }
 
   .topbar-actions {
-    width: 100%;
+    width: 80%;
     justify-content: center;
   }
 
@@ -356,7 +343,7 @@ body::before {
   }
 
   .container {
-    padding: 10px;
+    padding: 3px;
   }
 
   .section-title {
@@ -425,12 +412,6 @@ body::before {
   .botao {
     margin: 8px 20px;
   }
-  
-  .card {
-  border-left-width: 3px;
-  box-shadow: 0 2px 6px rgba(0, 43, 91, 0.06);
-}
-
 }
 .menu-toggle {
   display: none;
@@ -471,7 +452,7 @@ body::before {
   }
 
   .card {
-    padding: 12px;
+    padding: 8px;
     font-size: 0.9rem;
   }
 
