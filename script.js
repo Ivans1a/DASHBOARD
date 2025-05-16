@@ -267,108 +267,110 @@ function gerarPDF(resumoHoje, programacaoAmanha) {
   const img = new Image();
   img.src = "logo.png";
 
-  img.onload = () => {
-    // === TOPO COM LOGO E TÍTULO ===
-    doc.addImage(img, "PNG", 110, 10, 65, 15); // logo centralizada
+      // === TOPO COM LOGO E TÍTULO ===
+      doc.addImage(img, "PNG", 110, 10, 65, 15); // logo centralizada
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.setTextColor(33, 33, 33);
-    doc.text("RELATÓRIO OPERACIONAL", 148.5, 35, { align: "center" });
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.setTextColor(33, 33, 33);
+      doc.text("RELATÓRIO OPERACIONAL", 148.5, 35, { align: "center" });
 
-    doc.setDrawColor(200);
-    doc.line(14, 40, 283, 40); // linha divisória
+      doc.setDrawColor(200);
+      doc.line(14, 40, 283, 40); // linha divisória
 
-    // === SEÇÃO: RESUMO DE HOJE ===
-    const resumoColumns = ["OPERAÇÃO", "CLIENTE", "DATA", "DIVERGÊNCIA"];
-    const resumoRows = resumoHoje.map(item => [
-      item["OPERAÇÃO"],
-      item["CLIENTE"],
-      item["DATA"],
-      item["DESCRICAO"] || "-"
-    ]);
+      // === SEÇÃO: RESUMO DE HOJE ===
+      const resumoColumns = ["OPERAÇÃO", "CLIENTE", "DATA", "DIVERGÊNCIA"];
+      const resumoRows = resumoHoje.map(item => [
+        item["OPERAÇÃO"],
+        item["CLIENTE"],
+        item["DATA"],
+        item["DESCRICAO"] || "-"
+      ]);
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(0); // preto
-    doc.text("Resumo", 14, 48);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.setTextColor(0);
+      doc.text("Resumo", 14, 48);
 
-    doc.autoTable({
-      startY: 52,
-      head: [resumoColumns],
-      body: resumoRows,
-      margin: { left: 14, right: 14 },
-      theme: "striped",
-      headStyles: {
-        fillColor: [52, 73, 94],
-        textColor: 255,
-        halign: 'center',
-        fontStyle: 'bold'
-      },
-      bodyStyles: {
-        halign: 'center',
-        valign: 'middle',
-        fontSize: 10
-      },
-      styles: {
-        lineColor: [220],
-        lineWidth: 0.2,
-        minCellHeight: 8
-      }
-    });
+      doc.autoTable({
+        startY: 52,
+        head: [resumoColumns],
+        body: resumoRows,
+        margin: { left: 14, right: 14 },
+        theme: "striped",
+        headStyles: {
+          fillColor: [52, 73, 94],
+          textColor: 255,
+          halign: 'center',
+          fontStyle: 'bold'
+        },
+        bodyStyles: {
+          halign: 'center',
+          valign: 'middle',
+          fontSize: 10
+        },
+        styles: {
+          lineColor: [220],
+          lineWidth: 0.2,
+          minCellHeight: 8
+        }
+      });
 
-    // === SEÇÃO: PROGRAMAÇÃO DE AMANHÃ ===
-    const progColumns = ["OPERAÇÃO", "CLIENTE", "DATA"];
-    const progRows = programacaoAmanha.map(item => [
-      item["OPERAÇÃO"],
-      item["CLIENTE"],
-      item["DATA"]
-    ]);
+      // === SEÇÃO: PROGRAMAÇÃO DE AMANHÃ ===
+      const progColumns = ["OPERAÇÃO", "CLIENTE", "DATA"];
+      const progRows = programacaoAmanha.map(item => [
+        item["OPERAÇÃO"],
+        item["CLIENTE"],
+        item["DATA"]
+      ]);
 
-    const posY = doc.lastAutoTable.finalY + 10;
+      const posY = doc.lastAutoTable.finalY + 10;
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(0); // preto
-    doc.text("Programação", 14, posY);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.setTextColor(0);
+      doc.text("Programação", 14, posY);
 
-    doc.autoTable({
-      startY: posY + 4,
-      head: [progColumns],
-      body: progRows,
-      margin: { left: 14, right: 14 },
-      theme: "striped",
-      headStyles: {
-        fillColor: [243, 156, 18],
-        textColor: 255,
-        halign: 'center',
-        fontStyle: 'bold'
-      },
-      bodyStyles: {
-        halign: 'center',
-        valign: 'middle',
-        fontSize: 10
-      },
-      styles: {
-        lineColor: [220],
-        lineWidth: 0.2,
-        minCellHeight: 8
-      }
-    });
+      doc.autoTable({
+        startY: posY + 4,
+        head: [progColumns],
+        body: progRows,
+        margin: { left: 14, right: 14 },
+        theme: "striped",
+        headStyles: {
+          fillColor: [243, 156, 18],
+          textColor: 255,
+          halign: 'center',
+          fontStyle: 'bold'
+        },
+        bodyStyles: {
+          halign: 'center',
+          valign: 'middle',
+          fontSize: 10
+        },
+        styles: {
+          lineColor: [220],
+          lineWidth: 0.2,
+          minCellHeight: 8
+        }
+      });
 
-    // === RODAPÉ COM DATA DE EMISSÃO ===
-    const pageHeight = doc.internal.pageSize.getHeight();
-    doc.setFontSize(9);
-    doc.setTextColor(130);
-    doc.text(`Emitido em: ${hojeFormatado}`, 283 - 10, pageHeight - 10, { align: 'right' });
+      // === RODAPÉ COM DATA DE EMISSÃO ===
+      const pageHeight = doc.internal.pageSize.getHeight();
+      doc.setFontSize(9);
+      doc.setTextColor(130);
+      doc.text(`Emitido em: ${hojeFormatado}`, 283 - 10, pageHeight - 10, { align: 'right' });
 
-    doc.save(`relatorio_operacional_${hojeFormatado.replace(/\//g, "-")}.pdf`);
-  };
+      doc.save(`relatorio_operacional_${hojeFormatado.replace(/\//g, "-")}.pdf`);
+    };
+
+    bg.onerror = () => {
+      alert("Erro ao carregar imagem de fundo 'back.png'.");
+    };
 
   img.onerror = () => {
     alert("Erro ao carregar logo. Verifique se 'logo.png' está no diretório do projeto.");
   };
-}
 
 function formatDate(date) {
   const d = new Date(date);
