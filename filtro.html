@@ -162,6 +162,30 @@ body::before {
         transform: translateY(0);
       }
     }
+     /* Responsivo para celular */
+    @media (max-width: 600px) {
+      .container {
+        margin: 25px 10px;
+        padding: 0 12px;
+      }
+      .filtro input[type="date"] {
+        width: 100%;
+        font-size: 16px;
+        padding: 14px 16px;
+        margin-bottom: 16px;
+      }
+      .filtro button {
+        width: 100%;
+        margin-left: 0;
+        padding: 14px 0;
+        font-size: 16px;
+        border-radius: 10px;
+      }
+      .resultados {
+        grid-template-columns: 1fr !important;
+        gap: 18px;
+      }
+    }
   </style>
 </head>
 <body>
