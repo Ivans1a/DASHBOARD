@@ -167,7 +167,7 @@ function renderCards(containerId, data, isResumo) {
   container.innerHTML = "";
 
   if (data.length === 0) {
-    container.innerHTML = "<p style='color:#ccc'>Nenhum registro encontrado.</p>";
+    container.innerHTML = "<p style='color:#00000'>Nenhum registro encontrado.</p>";
     return;
   }
 

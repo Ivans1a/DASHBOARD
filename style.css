@@ -3,9 +3,10 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: #69727a70;
-  color: #1e1e1e;
+    color: #1c2b39;
+  min-height: 10vh;
   min-height: 100vh;
 }
 
@@ -25,6 +26,7 @@ body::before {
   pointer-events: none;
   z-index: -1;
 }
+
 
 .topbar {
   display: flex;
