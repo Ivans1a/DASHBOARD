@@ -1,11 +1,24 @@
 body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: radial-gradient(circle at top left, #202f3f, #162027);
-    color: #ffffff;
-    min-height: 100vh;
-  }
-  
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: url('BACK.png') no-repeat center center fixed;
+  background-size: cover;
+  color: #1c2b39;
+  min-height: 100vh;
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.85); /* camada branca translúcida */
+  z-index: -1;
+}
+
   header {
     display: flex;
     align-items: center;
