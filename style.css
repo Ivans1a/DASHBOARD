@@ -101,6 +101,9 @@ body::before {
     z-index: 1001;
   }
 
+  .menu-toggle.open .bar:nth-child(1) {
+  transform: rotate(45deg);
+}
   .topbar-actions {
     display: none;
     flex-direction: column;
