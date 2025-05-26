@@ -2,53 +2,55 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard de Gráficos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard Operações Semana</title>
   <link rel="stylesheet" href="graficos.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <header>
-    <div class="logo">
-      <img src="logo.png" alt="Logo">
-      <h1>Dashboard de Gráficos</h1>
-    </div>
-    <button onclick="location.href='index.html'">Voltar</button>
+    <h1>Dashboard de Operações - Última Semana</h1>
   </header>
 
-  <div class="container">
-    <div class="filtros">
-      <select id="filtroCliente"></select>
-      <input type="date" id="filtroDataInicio">
-      <input type="date" id="filtroDataFim">
-      <button id="aplicarFiltro">Aplicar Filtro</button>
-    </div>
-
-    <div class="cards">
+  <section class="top-container">
+    <div class="cards-fixos">
       <div class="card">
-        <h2>Total de Clientes</h2>
-        <p id="cardTotalClientes">-</p>
+        <h3>Cliente que mais movimenta</h3>
+        <p id="cliente-top">-</p>
       </div>
       <div class="card">
-        <h2>Cliente Mais Frequente</h2>
-        <p id="cardClienteFrequente">-</p>
+        <h3>Total de divergências</h3>
+        <p id="total-divergencias">0</p>
       </div>
       <div class="card">
-        <h2>Operação Mais Comum</h2>
-        <p id="cardOperacaoComum">-</p>
-      </div>
-      <div class="card">
-        <h2>Total de Divergências</h2>
-        <p id="cardTotalDivergencias">-</p>
+        <h3>Total de clientes</h3>
+        <p id="total-clientes">0</p>
       </div>
     </div>
 
-    <div class="graficos">
-      <canvas id="grafico1"></canvas>
-      <canvas id="grafico2"></canvas>
+    <div class="grafico-semana-container">
+      <canvas id="graficoSemana" width="400" height="150"></canvas>
     </div>
-  </div>
+  </section>
 
-  <script src="graficos.js"></script>
+  <section class="filtros">
+    <label for="filtroCliente">Cliente:</label>
+    <select id="filtroCliente"></select>
+
+    <label for="filtroDataInicio">Data Início:</label>
+    <input type="date" id="filtroDataInicio" />
+
+    <label for="filtroDataFim">Data Fim:</label>
+    <input type="date" id="filtroDataFim" />
+
+    <button id="aplicarFiltro">Aplicar Filtro</button>
+  </section>
+
+  <section class="cards-dinamicos">
+    <p style="text-align:center; color:#ffa500;">Use os filtros para mostrar informações detalhadas.</p>
+  </section>
+
+  <script src="script.js"></script>
 </body>
 </html>
+
