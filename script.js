@@ -371,10 +371,6 @@ bg.onload = function() {
   // código para quando a imagem carregar com sucesso
 };
 
-bg.onerror = function() {
-  alert("Erro ao carregar imagem de fundo 'VOLTAR.PNG'.");
-};
-
   img.onerror = () => {
     alert("Erro ao carregar logo. Verifique se 'logo.png' está no diretório do projeto.");
   };
