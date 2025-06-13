@@ -10,24 +10,6 @@ body {
   min-height: 100vh;
 }
 
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 90%;
-  margin-top: 5%;
-  background-image: url('VOLTAR.png'); /* ajuste aqui se necessário */
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: contain;
-  opacity: 0.20;
-  pointer-events: none;
-  z-index: -1;
-  filter: brightness(0.9); /* opcional, para suavizar ainda mais */
-}
-
 
 .topbar {
   display: flex;
