@@ -365,7 +365,6 @@ function gerarPDF(resumoHoje, programacaoAmanha) {
     };
 
   const bg = new Image();
-bg.src = 'VOLTAR.PNG';
 
 bg.onload = function() {
   // código para quando a imagem carregar com sucesso
