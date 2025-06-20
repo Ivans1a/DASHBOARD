@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Faturamentos Semanais</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="Faturamento.css" />
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+</head>
+
+<body>
+  <!-- TOPO -->
+<header class="top-bar">
+  <div class="logo-title">
+    <img src="logo.png" alt="Logo" class="logo" />
+  </div>
+
+  <h1 class="page-title">Faturamentos Semanais</h1>
+
+  <div class="top-actions">
+    <a href="index.html" class="btn-back" title="Voltar">
+      <i class="fas fa-arrow-left"></i> Voltar
+    </a>
+    <button id="refresh-btn" class="btn-refresh">
+      <i class="fas fa-sync-alt"></i> Atualizar
+    </button>
+  </div>
+</header>
+
+  <!-- FILTROS -->
+  <section class="filters-container">
+    <div class="filter-group">
+      <label for="start-date"><i class="fas fa-calendar-day"></i> Data Início</label>
+      <input type="date" id="start-date" />
+    </div>
+
+    <div class="filter-group">
+      <label for="end-date"><i class="fas fa-calendar-day"></i> Data Fim</label>
+      <input type="date" id="end-date" />
+    </div>
+
+    <div class="filter-group">
+      <label for="client-filter"><i class="fas fa-user-tag"></i> Cliente</label>
+      <select id="client-filter">
+        <option value="all">Todos os Clientes</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="status-filter"><i class="fas fa-filter"></i> Status</label>
+      <select id="status-filter">
+        <option value="all">Todos</option>
+        <option value="sent">Enviados</option>
+        <option value="pending">Pendentes</option>
+      </select>
+    </div>
+
+    <div class="filter-group" style="flex: 1;">
+      <label for="search-input"><i class="fas fa-search"></i> Buscar</label>
+      <input type="text" id="search-input" placeholder="Nº Processo ou Cliente" />
+    </div>
+
+    <div class="filter-group actions">
+      <button id="apply-filters" class="btn-apply">
+        <i class="fas fa-filter"></i> Aplicar Filtros
+      </button>
+    </div>
+  </section>
+
+  <!-- CARDS -->
+  <section class="invoices-grid" id="invoices-container">
+    <!-- Conteúdo gerado via JavaScript -->
+  </section>
+
+  <script src="faturamento.js"></script>
+</body>
+</html>
