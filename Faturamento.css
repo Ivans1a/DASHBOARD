@@ -253,3 +253,27 @@ width: 250px; /* define largura fixa */
   margin: 0;
   user-select: none;
 }
+.btn-export {
+  background-color: #1d4ed8;
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  transition: background-color 0.3s ease;
+}
+
+.btn-export i {
+  font-size: 16px;
+}
+
+.btn-export:hover {
+  background-color: #2563eb;
+}
+

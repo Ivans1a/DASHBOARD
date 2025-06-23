@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard de Faturamento</title>
+  <link rel="stylesheet" href="Dashfat.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: #f4f7fc;
+      color: #1f2937;
+    }
+
+    header.dash-header {
+      background: #2563eb;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .dash-header h1 {
+      margin: 0;
+      font-size: 1.6rem;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .filters label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.9rem;
+    }
+
+    .btn-apply {
+      padding: 0.5rem 1rem;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    main.dash-container {
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .charts-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: space-between;
+    }
+
+    .chart-box {
+      flex: 1 1 45%;
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .chart-full {
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="dash-header">
+    <h1>Dashboard de Faturamento</h1>
+    <div class="filters">
+      <label>Cliente:
+        <select id="filter-client"><option value="all">Todos</option></select>
+      </label>
+      <label>Tipo:
+        <select id="filter-type"><option value="all">Todos</option></select>
+      </label>
+      <label>Ano:
+        <select id="filter-year"><option value="all">Todos</option></select>
+      </label>
+      <button id="apply-filters" class="btn-apply">Aplicar</button>
+    </div>
+  </header>
+
+  <main class="dash-container">
+    <div class="charts-row">
+      <div class="chart-box">
+        <canvas id="chart-clientes"></canvas>
+      </div>
+      <div class="chart-box">
+        <canvas id="chart-tipos"></canvas>
+      </div>
+    </div>
+    <div class="chart-full">
+      <canvas id="chart-mensal"></canvas>
+    </div>
+  </main>
+
+  <script src="Dashfat.js"></script>
+</body>
+</html>

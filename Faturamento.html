@@ -3,32 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Faturamentos Semanais</title>
+  <title>Relatório de Faturamento</title>
 
+  <!-- Fontes e Ícones -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- Estilos -->
   <link rel="stylesheet" href="Faturamento.css" />
+
+  <!-- Bibliotecas JS -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 </head>
 
 <body>
   <!-- TOPO -->
-<header class="top-bar">
-  <div class="logo-title">
-    <img src="logo.png" alt="Logo" class="logo" />
-  </div>
+  <header class="top-bar">
+    <div class="logo-title">
+      <img src="logo.png" alt="Logo" class="logo" style="height: 40px; width: auto;" />
+    </div>
 
-  <h1 class="page-title">Faturamentos Semanais</h1>
+    <h1 class="page-title">Relatório de Faturamento</h1>
 
-  <div class="top-actions">
-    <a href="index.html" class="btn-back" title="Voltar">
-      <i class="fas fa-arrow-left"></i> Voltar
-    </a>
-    <button id="refresh-btn" class="btn-refresh">
-      <i class="fas fa-sync-alt"></i> Atualizar
-    </button>
-  </div>
-</header>
+    <div class="top-actions">
+      <a href="index.html" class="btn-back" title="Voltar">
+        <i class="fas fa-arrow-left"></i> Voltar
+      </a>
+      <button id="refresh-btn" class="btn-refresh">
+        <i class="fas fa-sync-alt"></i> Atualizar
+      </button>
+      <button id="export-pdf" class="btn-export">
+        <i class="fas fa-file-pdf"></i> Exportar PDF
+      </button>
+    </div>
+  </header>
 
   <!-- FILTROS -->
   <section class="filters-container">
@@ -75,6 +85,34 @@
     <!-- Conteúdo gerado via JavaScript -->
   </section>
 
+  <!-- SCRIPT PRINCIPAL -->
   <script src="Faturamento.js"></script>
+
+  <!-- ESTILO DO BOTÃO PDF -->
+  <style>
+    .btn-export {
+      background-color: #1d4ed8;
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-export i {
+      font-size: 16px;
+    }
+
+    .btn-export:hover {
+      background-color: #2563eb;
+    }
+  </style>
 </body>
 </html>

@@ -16,13 +16,9 @@ document.addEventListener('DOMContentLoaded', function () {
     updateTime: document.getElementById('update-time'),
     refreshBtn: document.getElementById('refresh-btn'),
     applyFiltersBtn: document.getElementById('apply-filters'),
+    exportPdfBtn: document.getElementById('export-pdf'),
     loadingIndicator: document.createElement('div'),
   };
-
-  if (!elements.invoicesContainer || !elements.applyFiltersBtn || !elements.refreshBtn) {
-    console.error('Elementos HTML não encontrados.');
-    return;
-  }
 
   elements.loadingIndicator.innerHTML = `
     <div style="
@@ -151,11 +147,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function parseDate(dateStr) {
     if (!dateStr) return null;
-    let d = new Date(dateStr);
-    if (!isNaN(d)) return d;
     const parts = dateStr.split('/');
-    if (parts.length === 3) return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
-    return null;
+    if (parts.length === 3) {
+      const [day, month, year] = parts;
+      return new Date(Number(year), Number(month) - 1, Number(day));
+    }
+    return new Date(dateStr);
   }
 
   function formatDate(date) {
@@ -198,8 +195,99 @@ document.addEventListener('DOMContentLoaded', function () {
     renderInvoices(filtered);
   }
 
+  async function exportPDF() {
+  const filtered = applyFilters(fullData);
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p', 'mm', 'a4');
+
+  // Logo carregada e calculada proporcionalmente
+  const logo = new Image();
+  logo.src = 'logo.png';
+  await new Promise((resolve) => { logo.onload = resolve; });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const logoWidth = 60; // maior que antes
+  const logoHeight = (logo.height / logo.width) * logoWidth;
+  const logoX = (pageWidth - logoWidth) / 2;
+  const logoY = 10;
+
+  doc.addImage(logo, 'PNG', logoX, logoY, logoWidth, logoHeight);
+
+  // Título centralizado logo abaixo da logo
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  const titleY = logoY + logoHeight + 10;
+  doc.text('Relatório de Faturamento', pageWidth / 2, titleY, { align: 'center' });
+
+  let y = titleY + 10;
+  const cardWidth = 92; // duas colunas
+  const cardHeight = 35;
+  const gap = 6;
+  let col = 0;
+
+  filtered.forEach((item, index) => {
+    const x = 12 + col * (cardWidth + gap);
+
+    if (y + cardHeight > 270) { // deixa espaço para rodapé
+      addFooter(doc);
+      doc.addPage();
+      y = 20;
+    }
+
+    // Card com fundo e borda
+    doc.setFillColor(245, 247, 255); // azul claro
+    doc.setDrawColor(200, 200, 255); // borda
+    doc.roundedRect(x, y, cardWidth, cardHeight, 3, 3, 'FD');
+
+    // Dados do card
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(33, 37, 41);
+    doc.text(`Processo:`, x + 5, y + 8);
+    doc.text(`Cliente:`, x + 5, y + 15);
+    doc.text(`Faturamento:`, x + 5, y + 22);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    doc.text(item.processo || '—', x + 30, y + 8);
+    doc.text(item.cliente || '—', x + 30, y + 15);
+    doc.text(formatDate(item.datafaturamento) || '—', x + 30, y + 22);
+
+    // Status colorido
+    const statusText = item.status === 'sent' ? 'ENVIADO' : 'PENDENTE';
+    const statusColor = item.status === 'sent' ? [46, 204, 113] : [231, 76, 60];
+
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...statusColor);
+    doc.text(`Status: ${statusText}`, x + 5, y + 30);
+
+    col++;
+    if (col > 1) {
+      col = 0;
+      y += cardHeight + 5;
+    }
+  });
+
+  addFooter(doc);
+  doc.save('relatorio_faturamento.pdf');
+}
+
+// Função para adicionar rodapé com data de emissão
+function addFooter(doc) {
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const now = new Date();
+  const formattedDate = now.toLocaleString('pt-BR');
+
+  doc.setFontSize(8);
+  doc.setTextColor(150);
+  doc.text(`Emitido em: ${formattedDate}`, pageWidth - 10, pageHeight - 10, { align: 'right' });
+}
+
+
   elements.applyFiltersBtn?.addEventListener('click', applyCurrentFilters);
   elements.refreshBtn?.addEventListener('click', loadData);
+  elements.exportPdfBtn?.addEventListener('click', exportPDF);
 
   loadData();
   setInterval(loadData, config.refreshInterval);
